@@ -1,5 +1,4 @@
-#This is a simple python script to move a raspberry pi robot using WiFi
-#For Complete Tutorial, visit http://rootsaid.com/robot-control-over-wifi/
+#This is a simple python script to move the gimbal using readings of accelerometer
 
 import RPi.GPIO as GPIO
 import socket
@@ -7,9 +6,6 @@ import csv
 import time
 import os
 import math
-
-global duty
-duty = 0
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)   
@@ -25,17 +21,16 @@ sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
 sock.setsockopt(socket.SOL_SOCKET,socket.SO_BROADCAST,1)
 sock.bind((UDP_IP, UDP_PORT))
 
+# for horizontal rotation
 pl = GPIO.PWM(18, 50)
 pl.start(0)
 
+# for vertical rotation
 pr = GPIO.PWM(13, 50)
 pr.start(0)
 
-
-
 def setAngle(angle):
     return (angle+90)/18 + 2
-
    
 def dist(a,b):
     return math.sqrt((a*a)+(b*b))
@@ -75,29 +70,19 @@ while True:
         y_old = duty_y
         flag = False
     
+    # to stablize the movement of gimbal
     if abs(duty_x - x_old) >= 1:
         pr.ChangeDutyCycle(duty_x)
         x_old = duty_x
     else:
         pr.ChangeDutyCycle(0)
-        
-    #time.sleep(2)
     
     if abs(duty_y - y_old) >= 1 :
         pl.ChangeDutyCycle(duty_y)
         y_old = duty_y
     else:
         pl.ChangeDutyCycle(0)
-    
-    
-    
-    #flag = False;
-    #print(y_theta , "y_th" )
-    #print(x_theta , "x_th")
-    #print(duty_x , "duty_x" )
-    #print(duty_y , "duty_y")
-    #print( "")
-    #time.sleep(3)
+
 pl.stop()
 pr.stop()
 GPIO.cleanup()  
